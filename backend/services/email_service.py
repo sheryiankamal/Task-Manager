@@ -9,6 +9,8 @@ load_dotenv()
 EMAIL_ADDRESS = os.getenv("EMAIL_ADDRESS")
 EMAIL_PASSWORD = os.getenv("EMAIL_PASSWORD")
 
+print("Email Address:", EMAIL_ADDRESS)
+print("Email Password:", EMAIL_PASSWORD)
 
 def send_email(
     to_email,
