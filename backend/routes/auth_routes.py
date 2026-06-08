@@ -14,20 +14,39 @@ def google_auth():
         name = data.get("name")
         google_id = data.get("google_id")
 
+        # First check by email
         existing_user = (
             supabase
             .table("users")
             .select("*")
-            .eq("google_id", google_id)
+            .eq("email", email)
             .execute()
         )
 
         if existing_user.data:
 
+            user = existing_user.data[0]
+
+            # Update google_id if missing or changed
+            if user.get("google_id") != google_id:
+
+                (
+                    supabase
+                    .table("users")
+                    .update({
+                        "google_id": google_id
+                    })
+                    .eq("id", user["id"])
+                    .execute()
+                )
+
+                user["google_id"] = google_id
+
             return {
-                "user": existing_user.data[0]
+                "user": user
             }, 200
 
+        # Create new user if email doesn't exist
         new_user = (
             supabase
             .table("users")
