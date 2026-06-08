@@ -232,7 +232,7 @@ EMAIL_PASSWORD=your_gmail_app_password
 ### Clone Repository
 
 ```bash
-git clone <repository-url>
+git clone https://github.com/sheryiankamal/Task-Manager.git
 ```
 
 ---
@@ -352,3 +352,8 @@ Software Engineer | Full Stack Developer
 ## License
 
 This project is created for learning and assessment purposes.
+
+
+## Loom Video
+
+https://www.loom.com/share/619dd672389b4239b8a2746beadf9393
