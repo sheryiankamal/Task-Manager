@@ -30,6 +30,9 @@ A full-stack task management application that allows users to authenticate with 
 
 * Email sent when a task is assigned
 * Email sent when a task is marked as completed
+* Email notifications are implemented using Resend.
+* Due to Resend's testing restrictions on unverified domains, emails are currently delivered to the verified testing email address. Once a custom domain is verified,
+  notifications can be sent to any recipient.
 
 ### User Experience
 
