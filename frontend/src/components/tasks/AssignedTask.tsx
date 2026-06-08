@@ -4,13 +4,14 @@ import { useEffect, useState } from "react";
 import api from "@/services/api";
 import { Task } from "@/types/taskForMe";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
+import { getAssignedTasks } from "@/services/taskService";
 
 export default function AssignedTasks() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const currentUser = useCurrentUser();
 
   const updateStatus = async (taskId: string, status: string) => {
-    try {
+    try { 
       await api.put(`/tasks/${taskId}/status`, {
         status,
       });
@@ -26,7 +27,7 @@ export default function AssignedTasks() {
   useEffect(() => {
      if (!currentUser?.id) return;
      try{
-      api.get(`/users/${currentUser.id}/assigned-tasks`).then((res) => {
+        getAssignedTasks(currentUser.id).then((res) => {
         setTasks(res.data.tasks);
       });
      }

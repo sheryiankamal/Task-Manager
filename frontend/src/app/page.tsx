@@ -1,15 +1,18 @@
 "use client";
 
-import AssignedTasks from "@/components/AssignedTask";
-import CreatedTasks from "@/components/CreatedTask";
-import CreateTaskForm from "@/components/CreateTaskForm";
-import LoginButton from "@/components/LoginButton";
-import UserProfile from "@/components/UserProfile";
+import AssignedTasks from "@/components/tasks/AssignedTask";
+import CreatedTasks from "@/components/tasks/CreatedTask";
+import CreateTaskForm from "@/components/tasks/CreateTaskForm";
+import UserProfile from "@/components/auth/UserProfile";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { useState } from "react";
 
 export default function Home() {
-  const [isOpen, setIsOpen] = useState(false);
+   const [showModal, setShowModal] =
+    useState(false);
+
+  const [refreshKey, setRefreshKey] =
+    useState(0);
 
   const currentUser = useCurrentUser();
   console.log(currentUser);
@@ -24,21 +27,22 @@ export default function Home() {
       </div>
       
       <button
-          onClick={() => setIsOpen(true)}
+          onClick={() => setShowModal(true)}
           className="bg-blue-600 text-white px-4 py-2 rounded-lg"
         >
           +
         </button>
 
-      {isOpen && (
+      {showModal && (
         <CreateTaskForm
-          onClose={() => setIsOpen(false)}
+          onClose={() => setShowModal(false)}
+          onTaskCreated={() => setRefreshKey((prev) => prev + 1)}
         />
       )}
 
       <AssignedTasks />
 
-      <CreatedTasks />
+      <CreatedTasks refreshKey={refreshKey} />
     </main>
   );
 }

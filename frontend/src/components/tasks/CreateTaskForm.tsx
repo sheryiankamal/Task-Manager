@@ -4,12 +4,15 @@ import { useEffect, useState } from "react";
 import api from "@/services/api";
 import { User } from "@/types/user";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
+import { createTask } from "@/services/taskService";
 
 interface CreateTaskFormProps {
   onClose: () => void;
+  onTaskCreated: () => void;
 }
 
-export default function CreateTaskForm({ onClose }: CreateTaskFormProps) {
+
+export default function CreateTaskForm({ onClose, onTaskCreated }: CreateTaskFormProps) {
 
   const currentUser = useCurrentUser();
 
@@ -43,22 +46,24 @@ export default function CreateTaskForm({ onClose }: CreateTaskFormProps) {
     });
 
     try {
-      await api.post("/tasks", {
+      await createTask({
         title,
         description,
         created_by: currentUser?.id,
         assigned_to: assignedTo,
       });
-    } catch (error) {
-      console.error("Error creating task:", error);
-      alert("Error creating task");
-    }
 
-    alert("Task Created");
+      onTaskCreated();
+      alert("Task Created");
 
     setTitle("");
     setDescription("");
     setAssignedTo("");
+      onClose();
+    } catch (error) {
+      console.error("Error creating task:", error);
+      alert("Error creating task");
+    }
   };
 
   return (

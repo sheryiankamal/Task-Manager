@@ -309,6 +309,24 @@ Backend User Sync
 Database User Record
 ```
 
+## Live Demo
+
+Frontend:
+https://task-manager-silk-ten.vercel.app
+
+Backend:
+https://task-manager-8z1x.onrender.com/
+
+## Tech Stack
+
+- Next.js
+- TypeScript
+- Flask
+- Supabase
+- NextAuth
+- Google OAuth
+- Resend
+
 ---
 
 ## Future Improvements
