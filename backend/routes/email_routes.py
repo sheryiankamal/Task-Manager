@@ -9,7 +9,7 @@ def test_email():
     try:
 
         success = send_email(
-            "your_email@gmail.com",
+            "kamal.bansal021202@gmail.com",
             "Test Email",
             "Task Manager is working"
         )
