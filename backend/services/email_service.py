@@ -1,40 +1,26 @@
 import os
-import smtplib
+import resend
 
-from email.mime.text import MIMEText
-from dotenv import load_dotenv
-
-load_dotenv()
-
-EMAIL_ADDRESS = os.getenv("EMAIL_ADDRESS")
-EMAIL_PASSWORD = os.getenv("EMAIL_PASSWORD")
-print("Email Address:", EMAIL_ADDRESS)
-print("Email Password:", EMAIL_PASSWORD)
+resend.api_key = os.getenv("RESEND_API_KEY")
 
 
 def send_email(to_email, subject, body):
+
     try:
-        msg = MIMEText(body)
 
-        msg["Subject"] = subject
-        msg["From"] = EMAIL_ADDRESS
-        msg["To"] = to_email
+        response = resend.Emails.send({
+            "from": "Task Manager <onboarding@resend.dev>",
+            "to": [to_email],
+            "subject": subject,
+            "text": body
+        })
 
-        with smtplib.SMTP("smtp.gmail.com", 587, timeout=30) as smtp:
-            smtp.starttls()
-
-            smtp.login(
-                EMAIL_ADDRESS,
-                EMAIL_PASSWORD
-            )
-
-            smtp.send_message(msg)
-
-        print(f"Email sent successfully to {to_email}")
+        print("Email sent:", response)
 
         return True
 
     except Exception as e:
-        print(f"Email failed: {str(e)}")
+
+        print("Email failed:", e)
 
         return False
