@@ -10,7 +10,10 @@ from routes.email_routes import test_bp
 
 app = Flask(__name__)
 
-CORS(app)
+CORS(app, origins=[
+     "http://localhost:3000",
+     "https://task-manager-silk-ten.vercel.app"
+])
 
 app.register_blueprint(user_bp)
 app.register_blueprint(task_bp)

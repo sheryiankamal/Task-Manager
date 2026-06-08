@@ -10,9 +10,13 @@ export default function AssignedTasks() {
   const currentUser = useCurrentUser();
 
   const updateStatus = async (taskId: string, status: string) => {
-    await api.put(`/tasks/${taskId}/status`, {
-      status,
-    });
+    try {
+      await api.put(`/tasks/${taskId}/status`, {
+        status,
+      });
+    } catch (error) {
+      console.error("Error updating task status:", error);
+    }
 
     setTasks((prev) =>
       prev.map((task) => (task.id === taskId ? { ...task, status } : task)),
@@ -21,9 +25,14 @@ export default function AssignedTasks() {
 
   useEffect(() => {
      if (!currentUser?.id) return;
-    api.get(`/users/${currentUser?.id}/assigned-tasks`).then((res) => {
-      setTasks(res.data.tasks);
-    });
+     try{
+      api.get(`/users/${currentUser.id}/assigned-tasks`).then((res) => {
+        setTasks(res.data.tasks);
+      });
+     }
+     catch(error){
+      console.error("Error fetching assigned tasks:", error);
+     }
   }, [currentUser]);
 
   return (

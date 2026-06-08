@@ -3,16 +3,26 @@ from services.supabase_client import supabase
 
 user_bp = Blueprint("users", __name__)
 
-@user_bp.route("/users", methods=["GET"])
+@user_bp.route("/users")
 def get_users():
 
-    response = (
-        supabase
-        .table("users")
-        .select("*")
-        .execute()
-    )
+    try:
 
-    return {
-        "users": response.data
-    }
+        response = (
+            supabase
+            .table("users")
+            .select("*")
+            .execute()
+        )
+
+        return {
+            "users": response.data
+        }, 200
+
+    except Exception as e:
+
+        print(f"Get Users Error: {e}")
+
+        return {
+            "error": str(e)
+        }, 500

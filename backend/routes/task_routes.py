@@ -8,184 +8,202 @@ task_bp = Blueprint("tasks", __name__)
 @task_bp.route("/tasks", methods=["POST"])
 def create_task():
 
-    data = request.get_json()
+    try:
 
-    required_fields = [
-        "title",
-        "description",
-        "created_by",
-        "assigned_to"
-    ]
+        data = request.get_json()
 
-    for field in required_fields:
-        if field not in data:
-            return {
-                "error": f"{field} is required"
-            }, 400
+        required_fields = [
+            "title",
+            "description",
+            "created_by",
+            "assigned_to"
+        ]
 
-    response = (
-        supabase
-        .table("tasks")
-        .insert({
-            "title": data["title"],
-            "description": data["description"],
-            "created_by": data["created_by"],
-            "assigned_to": data["assigned_to"],
-            "status": "pending"
-        })
-        .execute()
-    )
+        for field in required_fields:
+            if field not in data:
+                return {
+                    "error": f"{field} is required"
+                }, 400
 
-    # Fetch assigned user
-    assigned_user = (
-        supabase
-        .table("users")
-        .select("name,email")
-        .eq("id", data["assigned_to"])
-        .single()
-        .execute()
-    )
+        response = (
+            supabase
+            .table("tasks")
+            .insert({
+                "title": data["title"],
+                "description": data["description"],
+                "created_by": data["created_by"],
+                "assigned_to": data["assigned_to"],
+                "status": "pending"
+            })
+            .execute()
+        )
 
-    # Send assignment email
-    send_email(
-        assigned_user.data["email"],
-        "New Task Assigned",
-        f"""
-        Hello {assigned_user.data['name']},
+        try:
+            assigned_user = (
+                supabase
+                .table("users")
+                .select("name,email")
+                .eq("id", data["assigned_to"])
+                .single()
+                .execute()
+            )
 
-        You have been assigned a new task.
+            send_email(
+                assigned_user.data["email"],
+                "New Task Assigned",
+                f"Task: {data['title']}"
+            )
 
-        Title:
-        {data["title"]}
+        except Exception as email_error:
+            print(f"Email Error: {email_error}")
 
-        Description:
-        {data["description"]}
+        return {
+            "message": "Task created",
+            "task": response.data
+        }, 201
 
-        Please review and update the status when you start working on it.
+    except Exception as e:
 
-        Regards,
-        Task Manager
-        """
-    )
+        print(f"Create Task Error: {e}")
 
-    return {
-        "message": "Task created",
-        "task": response.data
-    }, 201
-
+        return {
+            "error": str(e)
+        }, 500
 
 @task_bp.route("/users/<user_id>/assigned-tasks")
 def assigned_tasks(user_id):
 
-    tasks = (
-        supabase
-        .table("tasks")
-        .select("*")
-        .eq("assigned_to", user_id)
-        .execute()
-    ).data
+    try:
 
-    for task in tasks:
-        creator = (
+        tasks = (
             supabase
-            .table("users")
-            .select("name,email")
-            .eq("id", task["created_by"])
-            .single()
+            .table("tasks")
+            .select("*")
+            .eq("assigned_to", user_id)
             .execute()
-        )
+        ).data
 
-        task["creator"] = creator.data
+        for task in tasks:
 
-    return {
-        "tasks": tasks
-    }, 200
+            creator = (
+                supabase
+                .table("users")
+                .select("name,email")
+                .eq("id", task["created_by"])
+                .single()
+                .execute()
+            )
 
+            task["creator"] = creator.data
 
+        return {
+            "tasks": tasks
+        }, 200
+
+    except Exception as e:
+
+        print(f"Assigned Tasks Error: {e}")
+
+        return {
+            "error": str(e)
+        }, 500
+        
 @task_bp.route("/users/<user_id>/created-tasks")
 def created_tasks(user_id):
 
-    tasks = (
-        supabase
-        .table("tasks")
-        .select("*")
-        .eq("created_by", user_id)
-        .execute()
-    ).data
+    try:
 
-    for task in tasks:
-        assignee = (
+        tasks = (
             supabase
-            .table("users")
-            .select("name,email")
-            .eq("id", task["assigned_to"])
-            .single()
+            .table("tasks")
+            .select("*")
+            .eq("created_by", user_id)
             .execute()
-        )
+        ).data
 
-        task["assignedUser"] = assignee.data
+        for task in tasks:
 
-    return {
-        "tasks": tasks
-    }, 200
+            assignee = (
+                supabase
+                .table("users")
+                .select("name,email")
+                .eq("id", task["assigned_to"])
+                .single()
+                .execute()
+            )
+
+            task["assignedUser"] = assignee.data
+
+        return {
+            "tasks": tasks
+        }, 200
+
+    except Exception as e:
+
+        print(f"Created Tasks Error: {e}")
+
+        return {
+            "error": str(e)
+        }, 500
 
 
 @task_bp.route("/tasks/<task_id>/status", methods=["PUT"])
 def update_status(task_id):
 
-    data = request.get_json()
+    try:
 
-    response = (
-        supabase
-        .table("tasks")
-        .update({
-            "status": data["status"]
-        })
-        .eq("id", task_id)
-        .execute()
-    )
+        data = request.get_json()
 
-    # Send email only when task is completed
-    if data["status"] == "completed":
-
-        task = (
+        response = (
             supabase
             .table("tasks")
-            .select("*")
+            .update({
+                "status": data["status"]
+            })
             .eq("id", task_id)
-            .single()
             .execute()
         )
 
-        creator = (
-            supabase
-            .table("users")
-            .select("name,email")
-            .eq("id", task.data["created_by"])
-            .single()
-            .execute()
-        )
+        if data["status"] == "completed":
 
-        send_email(
-            creator.data["email"],
-            "Task Completed",
-            f"""
-            Hello {creator.data['name']},
+            try:
 
-            The following task has been completed.
+                task = (
+                    supabase
+                    .table("tasks")
+                    .select("*")
+                    .eq("id", task_id)
+                    .single()
+                    .execute()
+                )
 
-            Title:
-            {task.data['title']}
+                creator = (
+                    supabase
+                    .table("users")
+                    .select("name,email")
+                    .eq("id", task.data["created_by"])
+                    .single()
+                    .execute()
+                )
 
-            Description:
-            {task.data['description']}
+                send_email(
+                    creator.data["email"],
+                    "Task Completed",
+                    f"Task '{task.data['title']}' completed"
+                )
 
-            Regards,
-            Task Manager
-            """
-        )
+            except Exception as email_error:
+                print(f"Completion Email Error: {email_error}")
 
-    return {
-        "message": "Task updated",
-        "task": response.data
-    }, 200
+        return {
+            "message": "Task updated",
+            "task": response.data
+        }, 200
+
+    except Exception as e:
+
+        print(f"Update Status Error: {e}")
+
+        return {
+            "error": str(e)
+        }, 500

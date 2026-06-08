@@ -22,10 +22,14 @@ export default function CreateTaskForm({ onClose }: CreateTaskFormProps) {
 
   useEffect(() => {
     if(!currentUser?.id) return;
-    api.get("/users").then((res) => {
+    try{
+      api.get("/users").then((res) => {
       console.log("Users API Response:", res.data);
       setUsers(res.data.users);
     });
+    }catch(error){
+      console.error("Error fetching users:", error);
+    }
   }, [currentUser]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -38,12 +42,17 @@ export default function CreateTaskForm({ onClose }: CreateTaskFormProps) {
       assigned_to: assignedTo,
     });
 
-    await api.post("/tasks", {
-      title,
-      description,
-      created_by: currentUser?.id,
-      assigned_to: assignedTo,
-    });
+    try {
+      await api.post("/tasks", {
+        title,
+        description,
+        created_by: currentUser?.id,
+        assigned_to: assignedTo,
+      });
+    } catch (error) {
+      console.error("Error creating task:", error);
+      alert("Error creating task");
+    }
 
     alert("Task Created");
 

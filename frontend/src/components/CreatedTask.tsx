@@ -15,9 +15,13 @@ export default function CreatedTasks() {
 
   useEffect(() => {
     if (!currentUser?.id) return;
-    api.get(`/users/${currentUser?.id}/created-tasks`).then((res) => {
+    try{
+      api.get(`/users/${currentUser?.id}/created-tasks`).then((res) => {
       setTasks(res.data.tasks);
     });
+    }catch(error){
+      console.error("Error fetching created tasks:", error);
+    }
   }, [currentUser]);
 
   return (

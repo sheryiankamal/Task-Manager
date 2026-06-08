@@ -4,36 +4,49 @@ from services.supabase_client import supabase
 auth_bp = Blueprint("auth", __name__)
 
 @auth_bp.route("/auth/google", methods=["POST"])
-def google_login():
+def google_auth():
 
-    data = request.get_json()
+    try:
 
-    email = data["email"]
-    name = data["name"]
+        data = request.get_json()
 
-    existing_user = (
-        supabase
-        .table("users")
-        .select("*")
-        .eq("email", email)
-        .execute()
-    )
+        email = data.get("email")
+        name = data.get("name")
+        google_id = data.get("google_id")
 
-    if existing_user.data:
+        existing_user = (
+            supabase
+            .table("users")
+            .select("*")
+            .eq("google_id", google_id)
+            .execute()
+        )
+
+        if existing_user.data:
+
+            return {
+                "user": existing_user.data[0]
+            }, 200
+
+        new_user = (
+            supabase
+            .table("users")
+            .insert({
+                "name": name,
+                "email": email,
+                "google_id": google_id
+            })
+            .execute()
+        )
+
         return {
-            "user": existing_user.data[0]
-        }
+            "user": new_user.data[0]
+        }, 201
 
-    new_user = (
-        supabase
-        .table("users")
-        .insert({
-            "name": name,
-            "email": email
-        })
-        .execute()
-    )
+    except Exception as e:
 
-    return {
-        "user": new_user.data[0]
-    }
+        print(f"Google Auth Error: {e}")
+
+        return {
+            "error": str(e)
+        }, 500
